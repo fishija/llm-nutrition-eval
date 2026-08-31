@@ -66,3 +66,19 @@ def csv_to_jsonl(csv_path: Path = RAW_DATASET_PATH, jsonl_path: Path = PROCESSED
 
     print(f"Wrote {len(meal_records)} records to {jsonl_path}")
     return meal_records
+
+
+def load_dataset(jsonl_path: Path = PROCESSED_DATASET_PATH) -> list[MealRecord]:
+    """Load processed .jsonl dataset into list of MealRecord objects."""
+    meal_records = []
+    with open(jsonl_path, "r", encoding="utf-8") as f:
+        for line_num, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                meal_records.append(MealRecord.model_validate_json(line))
+            except Exception as e:
+                print(f"Skipping line {line_num}: {e}")
+    print(f"Read {len(meal_records)} records from {jsonl_path}")
+    return meal_records

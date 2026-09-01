@@ -19,13 +19,6 @@ class Naming(str, Enum):
     BRANDED = "branded"
 
 
-class NutritionalValues(BaseModel):
-    calories: float
-    protein_g: float
-    carbs_g: float
-    fat_g: float
-
-
 class Tags(BaseModel):
     quantity: Quantity
     complexity: Complexity
@@ -35,6 +28,13 @@ class Tags(BaseModel):
 class Ingredient(BaseModel):
     name: str
     amount_g: float
+
+
+class NutritionalValues(BaseModel):
+    calories: float = Field(description="Total energy in kcal")
+    protein_g: float = Field(description="Total protein in grams")
+    carbs_g: float = Field(description="Total carbohydrates in grams")
+    fat_g: float = Field(description="Total fat in grams")
 
 
 class MealRecord(BaseModel):

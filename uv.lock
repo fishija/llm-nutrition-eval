@@ -859,11 +859,21 @@ name = "nuteval"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "anthropic" },
-    { name = "google-genai" },
     { name = "matplotlib" },
     { name = "pandas" },
     { name = "pydantic" },
+]
+
+[package.optional-dependencies]
+all = [
+    { name = "anthropic" },
+    { name = "google-genai" },
+]
+anthropic = [
+    { name = "anthropic" },
+]
+gemini = [
+    { name = "google-genai" },
 ]
 
 [package.dev-dependencies]
@@ -873,12 +883,14 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "anthropic", specifier = ">=1.2.0" },
-    { name = "google-genai", specifier = ">=2.20.0" },
+    { name = "anthropic", marker = "extra == 'anthropic'", specifier = ">=1.2.0" },
+    { name = "google-genai", marker = "extra == 'gemini'", specifier = ">=2.20.0" },
     { name = "matplotlib", specifier = ">=3.11.1" },
+    { name = "nuteval", extras = ["anthropic", "gemini"], marker = "extra == 'all'" },
     { name = "pandas", specifier = ">=3.0.5" },
     { name = "pydantic", specifier = ">=2.13.5" },
 ]
+provides-extras = ["anthropic", "gemini", "all"]
 
 [package.metadata.requires-dev]
 dev = [{ name = "ipykernel", specifier = ">=7.3.0" }]

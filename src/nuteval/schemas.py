@@ -1,7 +1,28 @@
 from pydantic import BaseModel, Field, computed_field
+from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime, timezone
 from enum import Enum
+
+
+class Provider(str, Enum):
+    ANTHROPIC = "anthropic"
+    GOOGLE = "google"
+
+
+@dataclass(frozen=True)
+class ModelConfig:
+    name: str
+    provider: Provider
+    # prices per 1m tokens (USD)
+    input_price_per_m: float
+    output_price_per_m: float
+
+    def calculate_cost(self, input_tokens: float, output_tokens: float) -> float:
+        """Calculate total USD cost for a run."""
+        input_cost = (input_tokens / 1_000_000) * self.input_price_per_m
+        output_cost = (output_tokens / 1_000_000) * self.output_price_per_m
+        return round(input_cost + output_cost, 2)
 
 
 class Quantity(str, Enum):

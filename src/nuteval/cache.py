@@ -41,9 +41,6 @@ def append_cached_run(record: CachedRun, cache_dir: Path = CACHE_DIR):
         f.write(record.model_dump_json() + "\n")
 
 
-def get_cached_run(meal_id: str, run_idx: int, cached_runs: list[CachedRun]) -> CachedRun | None:
-    """Get cached run from cached_runs based on meal_id and run_idx."""
-    for cr in cached_runs:
-        if cr.meal_id == meal_id and cr.run_idx == run_idx:
-            return cr
-    return None
+def get_cached_runs_per_meal(meal_id: str, cached_runs: list[CachedRun]) -> list[CachedRun]:
+    """Get all cached runs where meal_id matches."""
+    return [cr for cr in cached_runs if cr.meal_id == meal_id]

@@ -9,4 +9,8 @@ wheels/
 # Virtual environments
 .venv
 
+# environment variables
 .env
+
+# processed data
+data/processed/*

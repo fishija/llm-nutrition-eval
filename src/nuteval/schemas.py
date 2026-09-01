@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
+from datetime import datetime, timezone
 from enum import Enum
 
 
@@ -18,7 +19,7 @@ class Naming(str, Enum):
     BRANDED = "branded"
 
 
-class GroundTruth(BaseModel):
+class NutritionalValues(BaseModel):
     calories: float
     protein_g: float
     carbs_g: float
@@ -39,7 +40,7 @@ class Ingredient(BaseModel):
 class MealRecord(BaseModel):
     id: str = Field(examples=["meal_001", "meal_099"])
     description: str
-    ground_truth: GroundTruth
+    ground_truth: NutritionalValues
     tags: Tags
     ingredients: list[Ingredient]
     notes: str = ""

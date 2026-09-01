@@ -1,7 +1,7 @@
 from pathlib import Path
 import csv
 
-from nuteval.schemas import MealRecord, GroundTruth, Ingredient, Tags
+from nuteval.schemas import MealRecord, NutritionalValues, Ingredient, Tags
 from nuteval.config import RAW_DATASET_PATH, PROCESSED_DATASET_PATH
 
 
@@ -32,7 +32,7 @@ def _row_to_record(row: dict) -> MealRecord:
     return MealRecord(
         id = row["id"],
         description = row["description"],
-        ground_truth = GroundTruth(
+        ground_truth = NutritionalValues(
             calories = _str_to_float(row["calories"]),
             protein_g = _str_to_float(row["protein_g"]),
             carbs_g = _str_to_float(row["carbs_g"]),

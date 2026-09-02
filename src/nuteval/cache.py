@@ -6,7 +6,7 @@ from nuteval.schemas import CachedRun
 
 def _get_cache_path(model: str, cache_dir: Path = CACHE_DIR) -> Path:
     """Change models name to filename safe and return cache path."""
-    cache_dir.mkdir(parents=True, exists_ok=True)
+    cache_dir.mkdir(parents=True, exist_ok=True)
     safe_model_name = model.replace("/", "-").replace(":", "_")
     return cache_dir / f"{safe_model_name}.jsonl"
 
@@ -17,7 +17,7 @@ def load_cached_runs(model: str, cache_dir: Path = CACHE_DIR) -> list[CachedRun]
     cache_path = _get_cache_path(model, cache_dir)
 
     if not cache_path.exists():
-        return cache_path
+        return records
 
     with open(cache_path, "r", encoding="utf-8") as f:
         for line_num, line in enumerate(f):

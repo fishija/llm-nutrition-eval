@@ -12,5 +12,6 @@ wheels/
 # environment variables
 .env
 
-# processed data
+# data
 data/processed/*
+data/runs/*

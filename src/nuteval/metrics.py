@@ -59,7 +59,7 @@ def build_evaluation_dataframe(
 
 def build_model_leaderboard(
     df: pd.DataFrame
-):
+) -> pd.DataFrame:
     """Group flattened dataframe by model_name, calculate metrics and sort models from most accurate to least accurate."""
     summary = df[~df["has_error"]].groupby("model_name").agg(
         cal_mae=("cal_mae", "mean"),

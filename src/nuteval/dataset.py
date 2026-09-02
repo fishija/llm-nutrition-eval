@@ -64,7 +64,7 @@ def csv_to_jsonl(csv_path: Path = RAW_DATASET_PATH, jsonl_path: Path = PROCESSED
         for mr in meal_records:
             f.write(mr.model_dump_json() + "\n")
 
-    print(f"Wrote {len(meal_records)} records to {jsonl_path}")
+    print(f"Wrote {len(meal_records)} records to {jsonl_path.name}")
     return meal_records
 
 
@@ -80,5 +80,5 @@ def load_dataset(jsonl_path: Path = PROCESSED_DATASET_PATH) -> list[MealRecord]:
                 meal_records.append(MealRecord.model_validate_json(line))
             except Exception as e:
                 print(f"Skipping line {line_num}: {e}")
-    print(f"Read {len(meal_records)} records from {jsonl_path}")
+    print(f"Read {len(meal_records)} records from {jsonl_path.name}")
     return meal_records

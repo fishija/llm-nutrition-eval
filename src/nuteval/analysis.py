@@ -55,3 +55,23 @@ def build_evaluation_dataframe(
             rows.append(row)
 
     return pd.DataFrame(rows)
+
+
+def build_model_leaderboard(
+    df: pd.DataFrame
+):
+    """Group flattened dataframe by model_name, calculate metrics and sort models from most accurate to least accurate."""
+    summary = df[~df["has_error"]].groupby("model_name").agg(
+        cal_mae=("cal_mae", "mean"),
+        protein_mae=("protein_mae", "mean"),
+        carbs_mae=("carbs_mae", "mean"),
+        fat_mae=("fat_mae", "mean"),
+        avg_latency_s=("latency_s", "mean"),
+        avg_tokens=("total_tokens", "mean"),
+        total_cost_usd=("cost_usd", "sum"),
+    ).round(2)
+
+    # add failure rate
+    failure_rate = df.groupby("model_name")["has_error"].mean().rename("failure_rate").round(3)
+    summary = summary.join(failure_rate)
+    return summary.sort_values("cal_mae")

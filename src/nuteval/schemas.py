@@ -18,11 +18,11 @@ class ModelConfig:
     input_price_per_m: float
     output_price_per_m: float
 
-    def calculate_cost(self, input_tokens: float, output_tokens: float) -> float:
+    def calculate_cost(self, input_tokens: int, output_tokens: int) -> float:
         """Calculate total USD cost for a run."""
         input_cost = (input_tokens / 1_000_000) * self.input_price_per_m
         output_cost = (output_tokens / 1_000_000) * self.output_price_per_m
-        return round(input_cost + output_cost, 2)
+        return round(input_cost + output_cost, 6)
 
 
 class Quantity(str, Enum):

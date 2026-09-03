@@ -62,3 +62,34 @@ def add_error_metrics(df: pd.DataFrame) -> pd.DataFrame:
         df[f"{n}_ape"] = df[f"{n}_pct_err"].abs()
 
     return df
+
+
+def compute_summary(df: pd.DataFrame) -> pd.DataFrame:
+    """Per-model summary: calories accuracy, mean cost, mean latency, and error rate."""
+    n_runs = df.groupby("model_name").size().rename("n_runs")
+    n_errors = df.groupby("model_name")["has_error"].sum().rename("n_errors")
+    error_rate = (n_errors / n_runs * 100).rename("error_rate_pct")
+
+    # Accuracy based on calories APE only (excludes error/zero-gt rows automatically, since ape is NaN there)
+    calories_mape = df.groupby("model_name")["calories_ape"].mean().rename("calories_mape")
+    accuracy_pct = (100 - calories_mape).clip(lower=0).rename("calories_accuracy_pct")
+
+    mean_cost = df.groupby("model_name")["cost_usd"].mean().rename("mean_cost_usd")
+    mean_latency = df.groupby("model_name")["latency_s"].mean().rename("mean_latency_s")
+
+    summary = pd.concat(
+        [accuracy_pct, calories_mape, mean_cost, mean_latency, error_rate],
+        axis=1,
+    ).reset_index()
+
+    return summary.sort_values("calories_accuracy_pct", ascending=False).reset_index(drop=True)
+
+
+def format_summary_for_display(summary_df: pd.DataFrame) -> pd.DataFrame:
+    """Round summary columns for display."""
+    out = summary_df.copy()
+    out["calories_accuracy_pct"] = out["calories_accuracy_pct"].round(1)
+    out["calories_mape"] = out["calories_mape"].round(1)
+    out["mean_cost_usd"] = out["mean_cost_usd"].round(4)
+    out["mean_latency_s"] = out["mean_latency_s"].round(3)
+    return out

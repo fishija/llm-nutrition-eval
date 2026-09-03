@@ -11,6 +11,14 @@ CACHE_DIR = DATA_DIR / "runs"
 RAW_DATASET_PATH = RAW_DIR / "meals_dataset_v1.csv"
 PROCESSED_DATASET_PATH = PROCESSED_DIR / "meals_dataset_v1.jsonl"
 
+# Mapping of standard column names to schema attribute names
+NUTRIENT_FIELDS: dict[str, str] = {
+    "calories": "calories",
+    "protein": "protein_g",
+    "carbs": "carbs_g",
+    "fat": "fat_g",
+}
+
 MODELS = {
     "claude-haiku-4-5-20251001": ModelConfig(
         name = "claude-haiku-4-5-20251001",

@@ -1,4 +1,5 @@
 from nuteval.config import NUTRIENT_FIELDS
+from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
@@ -122,6 +123,92 @@ def plot_error_distribution_per_model(df: pd.DataFrame, nutrient: str = "calorie
             title_text="",
         ),
         margin=dict(t=80, b=100),
+    )
+
+    return fig
+
+
+def plot_pred_vs_gt_by_nutrient(df: pd.DataFrame) -> go.Figure:
+    """Scatter of predicted vs. ground truth, one subplot per nutrient, colored by model."""
+    models = sorted(df["model_name"].unique())
+    color_map = {m: COLOR_PALETTE[i % len(COLOR_PALETTE)] for i, m in enumerate(models)}
+
+    fig = make_subplots(
+        rows=2, cols=2,
+        subplot_titles=[n.capitalize() for n in NUTRIENT_FIELDS],
+        horizontal_spacing=0.1,
+        vertical_spacing=0.12,
+    )
+
+    positions = [(1, 1), (1, 2), (2, 1), (2, 2)]
+
+    for (row, col), nutrient in zip(positions, NUTRIENT_FIELDS):
+        gt_col, pred_col = f"gt_{nutrient}", f"pred_{nutrient}"
+        sub = df[["model_name", "meal_id", gt_col, pred_col]].dropna(subset=[gt_col, pred_col])
+
+        if sub.empty:
+            continue
+
+        # Diagonal y = x reference line, scaled to this subplot's data range
+        axis_min = min(sub[gt_col].min(), sub[pred_col].min())
+        axis_max = max(sub[gt_col].max(), sub[pred_col].max())
+        pad = (axis_max - axis_min) * 0.05
+        line_range = [axis_min - pad, axis_max + pad]
+
+        fig.add_trace(
+            go.Scatter(
+                x=line_range,
+                y=line_range,
+                mode="lines",
+                line=dict(color="gray", dash="dash", width=1),
+                name="y = x",
+                showlegend=(row == 1 and col == 1),
+                hoverinfo="skip",
+            ),
+            row=row, col=col,
+        )
+
+        # One trace per model so the legend is shared across subplots
+        for model in models:
+            model_sub = sub[sub["model_name"] == model]
+            if model_sub.empty:
+                continue
+            fig.add_trace(
+                go.Scatter(
+                    x=model_sub[gt_col],
+                    y=model_sub[pred_col],
+                    mode="markers",
+                    name=model,
+                    legendgroup=model,
+                    showlegend=(row == 1 and col == 1),
+                    marker=dict(color=color_map[model], size=6, opacity=0.7),
+                    customdata=model_sub[["meal_id"]],
+                    hovertemplate=(
+                        f"Model: {model}<br>"
+                        "Meal ID: %{customdata[0]}<br>"
+                        "Ground Truth: %{x:.1f}<br>"
+                        "Predicted: %{y:.1f}<extra></extra>"
+                    ),
+                ),
+                row=row, col=col,
+            )
+
+        fig.update_xaxes(title_text="Ground Truth", range=line_range, row=row, col=col)
+        fig.update_yaxes(title_text="Predicted", range=line_range, row=row, col=col)
+
+    fig.update_layout(
+        title="Predicted vs. Ground Truth by Macro",
+        title_x=0.5,
+        template=PLOTLY_TEMPLATE,
+        height=800,
+        legend=dict(
+            orientation="h",
+            yanchor="top",
+            y=-0.08,
+            xanchor="center",
+            x=0.5,
+        ),
+        margin=dict(t=100, b=100),
     )
 
     return fig

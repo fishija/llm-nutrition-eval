@@ -1,5 +1,5 @@
 import pandas as pd
-from nuteval.config import MODELS
+from nuteval.config import MODELS, NUTRIENT_FIELDS
 from nuteval.schemas import CachedRun, MealRecord
 
 
@@ -32,26 +32,33 @@ def build_evaluation_dataframe(
                 "quantity": meal.tags.quantity.value,
                 "complexity": meal.tags.complexity.value,
                 "naming": meal.tags.naming.value,
-                # Ground truth
-                "gt_calories": meal.ground_truth.calories,
-                "gt_protein": meal.ground_truth.protein_g,
-                "gt_carbs": meal.ground_truth.carbs_g,
-                "gt_fat": meal.ground_truth.fat_g,
             }
 
+            # Ground truth
+            for short_name, attr in NUTRIENT_FIELDS.items():
+                row[f"gt_{short_name}"] = getattr(meal.ground_truth, attr)
+
+            # Predictions
             if not has_error and run.meal_evaluation_response is not None:
                 pred = run.meal_evaluation_response.nutritional_values
-                row.update({
-                    "pred_calories": pred.calories,
-                    "pred_protein": pred.protein_g,
-                    "pred_carbs": pred.carbs_g,
-                    "pred_fat": pred.fat_g,
-                    # Absolute errors
-                    "cal_mae": abs(pred.calories - meal.ground_truth.calories),
-                    "protein_mae": abs(pred.protein_g - meal.ground_truth.protein_g),
-                    "carbs_mae": abs(pred.carbs_g - meal.ground_truth.carbs_g),
-                    "fat_mae": abs(pred.fat_g - meal.ground_truth.fat_g),
-                })
+                for short_name, attr in NUTRIENT_FIELDS.items():
+                    row[f"pred_{short_name}"] = getattr(pred, attr)
+
             rows.append(row)
 
     return pd.DataFrame(rows)
+
+
+def add_error_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Add MAE, signed % error and absolute % error for each nutrient."""
+    for n in NUTRIENT_FIELDS:
+        # If row has_error, the values will be NaN
+        gt = df[f"gt_{n}"]
+        pred = df[f"pred_{n}"]
+        err = pred - gt
+
+        df[f"{n}_mae"] = err.abs()
+        df[f"{n}_pct_err"] = (err / gt * 100).where(gt != 0)
+        df[f"{n}_ape"] = df[f"{n}_pct_err"].abs()
+
+    return df

@@ -212,3 +212,46 @@ def plot_pred_vs_gt_by_nutrient(df: pd.DataFrame) -> go.Figure:
     )
 
     return fig
+
+
+def plot_cost_vs_accuracy(summary_df: pd.DataFrame) -> go.Figure:
+    """Scatter of mean cost vs. mean error, one point per model. Bottom-left = best."""
+    fig = px.scatter(
+        summary_df,
+        x="mean_cost_usd",
+        y="calories_mape",
+        color="model_name",
+        size="mean_latency_s",
+        size_max=40,
+        text="model_name",
+        hover_data={
+            "model_name": False,
+            "mean_cost_usd": ":.4f",
+            "calories_mape": ":.1f",
+            "mean_latency_s": ":.2f",
+        },
+        title="Cost vs. Accuracy (bubble size = latency)",
+        labels={
+            "mean_cost_usd": "Mean Cost per Run (USD)",
+            "calories_mape": "Mean Absolute % Error (Calories)",
+            "mean_latency_s": "Mean Latency (s)",
+        },
+        template=PLOTLY_TEMPLATE,
+        color_discrete_sequence=COLOR_PALETTE,
+    )
+
+    fig.update_traces(
+        textposition="top center",
+        marker=dict(line=dict(width=1, color="white"), opacity=0.85),
+    )
+
+    fig.update_layout(
+        title_x=0.5,
+        showlegend=False,
+        margin=dict(t=80, b=60, l=60, r=60),
+    )
+
+    fig.update_xaxes(rangemode="tozero")
+    fig.update_yaxes(rangemode="tozero")
+
+    return fig
